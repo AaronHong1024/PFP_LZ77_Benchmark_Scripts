@@ -1,0 +1,17 @@
+{
+      "__default__": {
+        "account": "boucher",
+        "qos": "boucher",
+        "cpus-per-task": "32",
+        "Nodes": 1,
+        "mem": "300gb",
+        "runtime": "24:00:00",
+        "jobname": "SE_SARS",
+        "mail": "yu.hong@ufl.edu",
+        "mail_type": "ALL",
+        "out": "logs/%j.log",
+        "err": "logs/%j.log",
+        "node": "hpg-milan"
+    }
+}
+

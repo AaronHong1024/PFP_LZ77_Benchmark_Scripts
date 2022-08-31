@@ -1,0 +1,34 @@
+configfile: "experiment.json"
+
+workdir: config['workdir']
+
+wildcard_constraints:
+    ref= '|'.join([re.escape(x) for x in config["refs"]]),
+    prefix= '|'.join([re.escape(x) for x in config["prefix"]]),
+    algo= '|'.join([re.escape(x) for x in config["algo"]])
+
+outfiles = []
+for ref in config["refs"]:
+    for prefix in config["prefix"]:
+        for algo in config["algo"]:
+            outfiles.append("{prefix}.{ref}.{algo}.out".format(prefix=prefix,ref=ref,algo=algo))
+
+rule all:
+    input: outfiles
+
+rule fasta_to_res:
+    input:
+        fasta = "{prefix}_{ref}.txt",
+#         algo = "{algo}",
+        #expand("/blue/boucher/yu.hong/ReLZ/{prefix}_{ref}.fasta",prefix=config['prefix'], ref=config['refs'])
+    output:
+        out = "{prefix}.{ref}.{algo}.out",
+        #expand("/blue/boucher/yu.hong/ReLZ/{prefix}.{ref}.out",prefix=config['prefix'], ref=config['refs'])
+    benchmark: "Chr_19_benchmarks/{prefix}_{ref}_{algo}.benchmark.txt"
+    shell:
+        """
+        module load cmake
+        module load gcc/9.3.0
+        /usr/bin/time -v /blue/boucher/yu.hong/kkp/examples/gensa {input.fasta}
+        /usr/bin/time -v /blue/boucher/yu.hong/kkp/examples/count {input.fasta} {output} {wildcards.algo}
+        """

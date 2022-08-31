@@ -1,0 +1,38 @@
+configfile: "experiment.json"
+
+workdir: config['workdir']
+
+wildcard_constraints:
+    ref= '|'.join([re.escape(x) for x in config["refs"]]),
+    prefix= '|'.join([re.escape(x) for x in config["prefix"]])
+
+outfiles = []
+for ref in config["refs"]:
+    for prefix in config["prefix"]:
+        outfiles.append("{prefix}.{ref}_1.out".format(prefix=prefix,ref=ref))
+
+rule all:
+    input: outfiles
+
+rule fasta_to_res:
+    input:
+        fasta = "{prefix}_{ref}.fasta"
+        #expand("/blue/boucher/yu.hong/ReLZ/{prefix}_{ref}.fasta",prefix=config['prefix'], ref=config['refs'])
+    output:
+        out = "{prefix}.{ref}_1.out",
+        #expand("/blue/boucher/yu.hong/ReLZ/{prefix}.{ref}.out",prefix=config['prefix'], ref=config['refs'])
+    benchmark: "benchmarks/{prefix}_{ref}.benchmark.txt"
+    shell:
+        """
+        module load cmake
+        module load gcc/9.3.0
+        /blue/boucher/yu.hong/ReLZ/ReLZ {input.fasta} -o {output.out} -f
+        """
+    # run:
+    #     shell("module load cmake")
+    #     shell("module load gcc/9.3.0")
+    #     for x in range(len(input)):
+    #             shell("bash -v /blue/boucher/yu.hong/ReLZ/ReLZ {input} -o {output}".format(input = input[x], output = output[x]))
+    # shell:
+    #     "/ReLZ {input:q} -o {output:q}"
+

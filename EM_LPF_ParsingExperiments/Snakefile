@@ -1,0 +1,31 @@
+configfile: "experiment.json"
+
+workdir: config['workdir']
+
+wildcard_constraints:
+    ref= '|'.join([re.escape(x) for x in config["refs"]]),
+    prefix= '|'.join([re.escape(x) for x in config["prefix"]])
+
+outfiles = []
+for ref in config["refs"]:
+    for prefix in config["prefix"]:
+        outfiles.append("{prefix}.{ref}.out".format(prefix=prefix,ref=ref))
+
+rule all:
+    input: outfiles
+
+rule fasta_to_res:
+    input:
+        fasta = "/blue/boucher/yu.hong/eSAIS-master/data/{prefix}_{ref}.txt"
+        #expand("/blue/boucher/yu.hong/ReLZ/{prefix}_{ref}.fasta",prefix=config['prefix'], ref=config['refs'])
+    output:
+        out = "{prefix}.{ref}.out",
+        #expand("/blue/boucher/yu.hong/ReLZ/{prefix}.{ref}.out",prefix=config['prefix'], ref=config['refs'])
+    benchmark: "benchmarks/{prefix}_{ref}.benchmark.txt"
+    shell:
+        """
+        module load cmake
+        module load gcc/9.3.0
+        /usr/bin/time -v /blue/boucher/yu.hong/eSAIS-master/build/src/esactest --writeinput {input.fasta} -W
+        /usr/bin/time -v /blue/boucher/yu.hong/EM-LPF/build/parse 30000 {input.fasta} {output}
+        """

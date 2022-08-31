@@ -1,0 +1,6 @@
+{
+    "workdir": "/blue/boucher/yu.hong/kkp/examples",
+    "refs": ["1","2","4","8","16","32","64","128"],
+    "prefix": ["Chr_19_2504"],
+    "algo": ["kkp3","kkp1s"]
+}

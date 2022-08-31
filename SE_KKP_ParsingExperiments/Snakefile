@@ -1,0 +1,33 @@
+configfile: "experiment.json"
+
+workdir: config['workdir']
+
+wildcard_constraints:
+    ref= '|'.join([re.escape(x) for x in config["refs"]]),
+    prefix= '|'.join([re.escape(x) for x in config["prefix"]])
+
+outfiles = []
+for ref in config["refs"]:
+    for prefix in config["prefix"]:
+        outfiles.append("{prefix}.{ref}.out".format(prefix=prefix,ref=ref))
+
+rule all:
+    input: outfiles
+
+rule fasta_to_res:
+    input:
+        fasta = "/blue/boucher/yu.hong/fsais/data/{prefix}.{ref}k.fa"
+        #expand("/blue/boucher/yu.hong/ReLZ/{prefix}_{ref}.fasta",prefix=config['prefix'], ref=config['refs'])
+    output:
+        out = "{prefix}.{ref}.out",
+        #expand("/blue/boucher/yu.hong/ReLZ/{prefix}.{ref}.out",prefix=config['prefix'], ref=config['refs'])
+    benchmark: "SARS_benchmarks/{prefix}_{ref}.benchmark.txt"
+    shell:
+        """
+        module load cmake
+        module load gcc/9.3.0
+        /usr/bin/time -v /blue/boucher/yu.hong/fsais/construct_sa {input.fasta}
+        /usr/bin/time -v /blue/boucher/yu.hong/SE-KKP/build/parse 262144 {input.fasta} {output}
+        """
+
+
